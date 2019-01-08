@@ -1,0 +1,1 @@
+plot(Donnees_employes$salDebut,Donnees_employes$datEntree)

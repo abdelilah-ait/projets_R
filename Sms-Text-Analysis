@@ -1,0 +1,57 @@
+setwd("C:/bny")
+install.packages("tm")
+sms_data <- read.csv("SMSSpamCollection.csv" , header=F) 
+names(sms_data) <- c("type" , "text")
+
+#creating the corpus- collection of text documents
+library("tm")
+sms_corpus <- Corpus(VectorSource(sms_data$text))
+print(sms_corpus)
+inspect(sms_corpus[1:5])
+
+#cleaning of the corpus
+corpus_clean <- tm_map(sms_corpus , tolower)
+corpus_clean <- tm_map(corpus_clean, removeNumbers)
+corpus_clean <- tm_map( corpus_clean , removeWords , stopwords())
+corpus_clean <- tm_map(corpus_clean , removePunctuation)
+
+corpus_clean <- tm_map(corpus_clean , stripWhitespace)
+
+inspect(corpus_clean[1:3])
+corpus_clean <- Corpus(VectorSource(corpus_clean))
+
+#after cleaning done, next step is tokenization
+#token is a asingle element of a text string aka words
+#DocumentTermMatrix function will take a corpus and creata a sparse matrix in which rows
+# indicate documents and columns indicate terms
+
+sms_dtm <- DocumentTermMatrix(corpus_clean)
+
+
+#now we have a large sparse matrix for analysis
+#next step, splitting the data into test and training sets
+
+summary(sms_data$type)
+sms_data_train <- sms_data[1:3900,]
+sms_data_test <- sms_data[3901:5572,]
+
+sms_dtm_train <- sms_dtm[1:3900,]
+sms_dtm_test <- sms_dtm[3901:5572,]
+
+#visualizing data - wordclouds
+install.packages("wordcloud")
+library("wordcloud")
+
+#make individual wordclouds of spam and ham
+
+spam <- sms_corpus[sms_corpus$type=="spam" ,text]
+library("dplyr")
+spam <- sms_data %>%
+  filter(type=="spam")
+
+ham <- sms_data %>%
+  filter(type=="ham")
+
+summary(sms_data)
+wordcloud(spam$text,max.words=40,scale=c(3,0.5))
+wordcloud(ham$text,max.words=40,scale=c(3,0.5))
